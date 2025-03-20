@@ -76,7 +76,9 @@ export const login = async (req, res) => {
             return res.status(400).json({ message: "All fields are required" });
         }
 
+        // check if user exists
         const user = await User.findOne({ email });
+        
         if (!user) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
