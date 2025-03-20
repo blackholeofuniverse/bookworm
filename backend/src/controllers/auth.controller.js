@@ -43,10 +43,16 @@ export const register = async (req, res) => {
         const token = generateToken(newUser._id)
 
 
-        res.cookie("token", token)
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 24 * 60 * 60 * 1000 // 15 day
+        });
 
 
-        return res.status(200).json({
+        // if everything succeeds, send this
+        return res.status(201).json({
             message: "User created successfully",
             token,
             user: {
@@ -63,5 +69,44 @@ export const register = async (req, res) => {
 }
 
 export const login = async (req, res) => {
-    res.send("Login route");
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ message: "All fields are required" });
+        }
+
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const isPasswordValid = await user.comparePassword(password);
+        if (!isPasswordValid) {
+            return res.status(400).json({ message: "Invalid credentials" });
+        }
+
+        const token = generateToken(user._id);
+
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: process.env.NODE_ENV === 'production',
+            sameSite: 'strict',
+            maxAge: 15 * 24 * 60 * 60 * 1000
+        });
+
+        return res.status(200).json({
+            message: "Login successful",
+            token,
+            user: {
+                id: user._id,
+                username: user.username,
+                email: user.email,
+                profileImage: user.profileImage
+            }
+        });
+    } catch (error) {
+        console.error("Error in login route", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
 }
