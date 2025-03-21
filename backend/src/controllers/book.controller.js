@@ -28,15 +28,31 @@ export const createBook = async (req, res) => {
     }
 }
 
-// export const getBooks = async (req, res) => {
-//     try {
-//         const books = await Book.find();
+// pagination => infinite scroll
+export const getBooks = async (req, res) => {
+    try {
+        const page = req.query.page || 1;
+        const limit = req.query.limit || 5;
+        const skip = (page - 1) * limit;
 
-//         if (books.length < 1) res.status(404).json({ message: "No books found" });
+        const books = await Book.find()
+            .sort({ createdAt: -1 }) // descending order
+            .skip(skip)
+            .limit(limit)
+            .populate("user", "username profileImage")
 
-//         return res.status(200).json({ message: "Books fetched successfully", books });
-//     } catch (error) {
-//         console.log("Error in getBooks route", error);
-//         return res.status(500).json({ message: "Internal Server Error" });
-//     }
-// }
+        if (books.length < 1) res.status(404).json({ message: "No books found" });
+
+        const totalBooks = await Book.countDocuments();
+
+        res.send({
+            books,
+            totalBooks,
+            currentPage: page,
+            totalPages: Math.ceil(total / limit)
+        })
+    } catch (error) {
+        console.log("Error in getting all books", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+}
