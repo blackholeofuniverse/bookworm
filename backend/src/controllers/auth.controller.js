@@ -1,7 +1,8 @@
 import { generateToken } from "../lib/utils.js";
 import User from "../models/user.model.js"
+import { loginLimiter, registerLimiter } from "../middleware/rateLimiter.js";
 
-export const register = async (req, res) => {
+export const register = [registerLimiter, async (req, res) => {
     try {
         const { email, username, password } = req.body
 
@@ -42,15 +43,6 @@ export const register = async (req, res) => {
 
         const token = generateToken(newUser._id)
 
-
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 15 * 24 * 60 * 60 * 1000 // 15 day
-        });
-
-
         // if everything succeeds, send this
         return res.status(201).json({
             message: "User created successfully",
@@ -66,9 +58,9 @@ export const register = async (req, res) => {
         console.log("Error in register route", error);
         return res.status(500).json({ message: "Internal Server Error" })
     }
-}
+}];
 
-export const login = async (req, res) => {
+export const login = [loginLimiter, async (req, res) => {
     try {
         const { email, password } = req.body;
 
@@ -78,24 +70,19 @@ export const login = async (req, res) => {
 
         // check if user exists
         const user = await User.findOne({ email });
-        
+
         if (!user) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
         const isPasswordValid = await user.comparePassword(password);
+
         if (!isPasswordValid) {
             return res.status(400).json({ message: "Invalid credentials" });
         }
 
+        // generate token
         const token = generateToken(user._id);
-
-        res.cookie("token", token, {
-            httpOnly: true,
-            secure: process.env.NODE_ENV === 'production',
-            sameSite: 'strict',
-            maxAge: 15 * 24 * 60 * 60 * 1000
-        });
 
         return res.status(200).json({
             message: "Login successful",
@@ -111,4 +98,4 @@ export const login = async (req, res) => {
         console.error("Error in login route", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
-}
+}];
