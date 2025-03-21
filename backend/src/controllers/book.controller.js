@@ -1,5 +1,6 @@
 import cloudinary from '../lib/cloudinary.js';
 import Book from '../models/book.model.js';
+import cloudinary from '../lib/cloudinary.js';
 
 export const createBook = async (req, res) => {
     try {
@@ -28,9 +29,11 @@ export const createBook = async (req, res) => {
     }
 }
 
-// pagination => infinite scroll
 export const getBooks = async (req, res) => {
+    // example call from react native - frontend
+    //const response = await fetch("http://localhost:3000/api/books?page=1&limit=5")
     try {
+        // pagination => infinite scroll
         const page = req.query.page || 1;
         const limit = req.query.limit || 5;
         const skip = (page - 1) * limit;
@@ -53,6 +56,47 @@ export const getBooks = async (req, res) => {
         })
     } catch (error) {
         console.log("Error in getting all books", error);
+        return res.status(500).json({ message: "Internal Server Error" });
+    }
+}
+
+export const getBooksByUser = async (req, res) => {
+    try {
+        const books = await Book.find({ user: req.user._id }).sort({ createdAt: -1 })
+        res.json(books)
+    } catch (error) {
+        console.error("Error in getting user books", error.message)
+        res.status(500).json({ message: "Internal Server Error" })
+    }
+}
+
+export const deleteBook = async (req, res) => {
+    try {
+        const book = await Book.findById(req.params.id);
+
+        if (!book) return res.status(404).json({ message: "Book not found" });
+
+        // check if the user is creator of the book
+        if (book.user.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        // delete the image from cloudinary as well
+        if (book.image && book.image.includes("cloudinary")) {
+            try {
+                const publicId = book.image.split("/").pop().split(".")[0];
+                await cloudinary.uploader.destroy(publicId);
+            } catch (error) {
+                console.log("Error in deleting image from cloudinary", error);
+                return res.status(500).json({ message: "Internal Server Error" });
+            }
+        }
+
+        await book.deleteOne();
+
+        return res.status(200).json({ message: "Book deleted successfully" });
+    } catch (error) {
+        console.log("Error in delete book route", error);
         return res.status(500).json({ message: "Internal Server Error" });
     }
 }
