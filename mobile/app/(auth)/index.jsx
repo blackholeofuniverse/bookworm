@@ -21,7 +21,9 @@ const Login = () => {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = () => {
-    console.log("login");
+    fetch("https://localhost:3000/api/auth/login", {
+      
+    })
   };
   return (
     <KeyboardAvoidingView
@@ -104,7 +106,7 @@ const Login = () => {
             </TouchableOpacity>
 
             <View style={styles.footer}>
-              <Text style={styles.footerText}>Don't have an account</Text>
+              <Text style={styles.footerText}>Don't have an account?</Text>
               <Link href={"/signup"} asChild>
                 <TouchableOpacity>
                   <Text style={styles.link}>Sign Up</Text>
