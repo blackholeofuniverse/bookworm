@@ -8,7 +8,7 @@ export const useAuthStore = create((set) => ({
     register: async (username, email, password) => {
         set({ isLoading: true })
         try {
-            const response = await fetch("http://localhost:3000/api/auth/register", {
+            const response = await fetch("https://bookworm-uu5s.onrender.com/api/auth/register", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -36,7 +36,7 @@ export const useAuthStore = create((set) => ({
     login: async (email, password) => {
         set({ isLoading: true })
         try {
-            const response = await fetch("http://localhost:3000/api/auth/login", {
+            const response = await fetch("https://bookworm-uu5s.onrender.com/api/auth/login", {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -59,6 +59,22 @@ export const useAuthStore = create((set) => ({
         } catch (error) {
             set({ isLoading: false })
             return { success: false, error: error.message }
+        }
+    },
+    logout: async () => {
+        await AsyncStorage.removeItem("token")
+        await AsyncStorage.removeItem("user")
+        set({ token: null, user: null })
+    },
+    checkAuth: async () => {
+        try {
+            const token = await AsyncStorage.getItem("token");
+            const userJson = await AsyncStorage.getItem("user");
+
+            const user = userJson ? JSON.parse(userJson) : null;
+            set({ token, user })
+        } catch (error) {
+            console.log("Auth check failed", error);
         }
     }
 })) 

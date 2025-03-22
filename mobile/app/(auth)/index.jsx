@@ -20,17 +20,13 @@ const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading, register] = useState(false);
 
-  const { user, login, token } = useAuthStore();
+  const { login, isLoading } = useAuthStore();
 
   const handleLogin = async () => {
     const result = await login(email, password);
     if (!result.success) Alert.alert("Error", result.error);
   };
-
-  console.log(user);
-  console.log(token);
 
   return (
     <KeyboardAvoidingView
