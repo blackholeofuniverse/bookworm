@@ -7,24 +7,31 @@ import {
   ActivityIndicator,
   KeyboardAvoidingView,
   Platform,
+  Alert,
 } from "react-native";
 import { Link } from "expo-router";
 import styles from "../../assets/styles/login.styles";
 import { useState } from "react";
 import COLORS from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
+import { useAuthStore } from "../../store/authStore";
 
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading, register] = useState(false);
 
-  const handleLogin = () => {
-    fetch("https://localhost:3000/api/auth/login", {
-      
-    })
+  const { user, login, token } = useAuthStore();
+
+  const handleLogin = async () => {
+    const result = await login(email, password);
+    if (!result.success) Alert.alert("Error", result.error);
   };
+
+  console.log(user);
+  console.log(token);
+
   return (
     <KeyboardAvoidingView
       style={{ flex: 1 }}

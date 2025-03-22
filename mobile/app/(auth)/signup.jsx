@@ -6,23 +6,32 @@ import {
   TextInput,
   TouchableOpacity,
   ActivityIndicator,
+  Alert,
 } from "react-native";
 import styles from "../../assets/styles/signup.styles";
 import { useState } from "react";
 import COLORS from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import { useAuthStore } from "../../store/authStore";
 
 const signup = () => {
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const { user, isLoading, register, token } = useAuthStore();
 
   const router = useRouter();
 
-  const handleSignUp = () => {};
+  const handleSignUp = async () => {
+    const result = await register(username, email, password);
+    if (!result.success) Alert.alert("Error", result.error);
+  }
+
+  console.log(user);
+  console.log(token);
 
   return (
     <KeyboardAvoidingView
@@ -49,7 +58,7 @@ const signup = () => {
                 />
                 <TextInput
                   style={styles.input}
-                  placeholder="John Doe"
+                  placeholder="johndoe"
                   placeholderTextColor={COLORS.placeholderText}
                   value={username}
                   onChangeText={setUsername}
@@ -112,6 +121,7 @@ const signup = () => {
               </View>
             </View>
 
+            {/* Button */}
             <TouchableOpacity
               style={styles.button}
               onPress={handleSignUp}
@@ -120,10 +130,11 @@ const signup = () => {
               {isLoading ? (
                 <ActivityIndicator color={"#fff"} />
               ) : (
-                <Text style={styles.buttonText}>Login</Text>
+                <Text style={styles.buttonText}>Sign Up</Text>
               )}
             </TouchableOpacity>
 
+            {/* Footer */}
             <View style={styles.footer}>
               <Text style={styles.footerText}>Already have an account?</Text>
               <TouchableOpacity onPress={() => router.back()}>
