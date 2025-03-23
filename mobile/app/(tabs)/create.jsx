@@ -61,13 +61,13 @@ const Create = () => {
 
       // if base64 is provided, use it
       if (result.assets[0].base64) {
-        setImagebase64(result.assets[0].uri);
+        setImagebase64(result.assets[0].base64);
       } else {
         // otherwise convert to base64
         const base64 = await FileSystem.readAsStringAsync(
           result.assets[0].uri,
           {
-            encoding: FileSystem.EncodingType.base64,
+            encoding: FileSystem.EncodingType.Base64,
           }
         );
         setImagebase64(base64);
@@ -183,7 +183,7 @@ const Create = () => {
                   placeholder="Enter book title"
                   placeholderTextColor={COLORS.placeholderText}
                   value={title}
-                  onChange={setTitle}
+                  onChangeText={setTitle}
                 />
               </View>
             </View>
