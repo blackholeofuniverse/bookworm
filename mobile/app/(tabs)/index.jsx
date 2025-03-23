@@ -1,4 +1,10 @@
-import { View, Text, TouchableOpacity, FlatList, ActivityIndicator } from "react-native";
+import {
+  View,
+  Text,
+  FlatList,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { Image } from "expo-image";
@@ -7,6 +13,7 @@ import { API_URL } from "../../constants/api";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 import { formatPublishDate } from "../../lib/utils";
+import Loader from "../../components/Loader";
 
 const Home = () => {
   const { token } = useAuthStore();
@@ -112,13 +119,8 @@ const Home = () => {
     return stars;
   };
 
-  if (loading) {
-    return (
-      <View style={{flex: 1, justifyContent: "center", alignItems: "center", backgroundColor: COLORS.background}}>
-        <ActivityIndicator size={40} color={COLORS.primary} />
-      </View>
-    );
-  }
+  if (loading) return <Loader />;
+
   return (
     <View style={styles.container}>
       <FlatList
@@ -130,6 +132,14 @@ const Home = () => {
         onEndReached={handleLoadMore}
         onEndReachedThreshold={0.1}
         refreshing={refreshing}
+        // refreshControl={
+        //   <RefreshControl
+        //     refreshing={refreshing}
+        //     onRefresh={() => fetchBooks(1, true)}
+        //     colors={COLORS.primary}
+        //     tintColor={COLORS.primary}
+        //   />
+        // }
         onRefresh={() => fetchBooks(1, true)}
         ListHeaderComponent={
           <View style={styles.header}>
