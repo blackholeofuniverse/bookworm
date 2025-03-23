@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   Image,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import React, { useState } from "react";
 import { useRouter } from "expo-router";
@@ -16,6 +17,8 @@ import COLORS from "../../constants/colors";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
 import * as FileSystem from "expo-file-system";
+import { useAuthStore } from "../../store/authStore";
+import { API_URL } from "../../constants/api";
 
 const Create = () => {
   const [title, setTitle] = useState("");
@@ -26,6 +29,7 @@ const Create = () => {
   const [loading, setLoading] = useState(false);
 
   const router = useRouter();
+  const { token } = useAuthStore();
 
   const pickImage = async () => {
     try {
@@ -41,6 +45,7 @@ const Create = () => {
           return;
         }
       }
+
       // launch the image library
       const result = await ImagePicker.launchImageLibraryAsync({
         mediaTypes: "images",
@@ -67,10 +72,65 @@ const Create = () => {
         );
         setImagebase64(base64);
       }
-    } catch (error) {}
+    } catch (error) {
+      console.log("Error picking image:", error);
+      Alert.alert("Error", "There was a problem selecting your image");
+    }
   };
 
-  const handleSubmit = async () => {};
+  const handleSubmit = async () => {
+    if (!title || !caption || !imageBase64 || !rating) {
+      Alert.alert("Error", "Pleas fill in all the fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      // get file extension from URI or default to jpeg
+      const uriParts = image.split(".");
+      const fileType = uriParts[uriParts.length - 1];
+      const imageType = fileType
+        ? `image/${fileType.toLowerCase()}`
+        : "image/jpeg";
+
+      const imageDataUrl = `data:${imageType};base64,${imageBase64}`;
+
+      const response = await fetch(`${API_URL}/books`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          title,
+          caption,
+          rating: rating.toString(),
+          image: imageDataUrl,
+        }),
+      });
+
+      // Fix: Await the json response
+      const data = await response.json();
+
+      if (!response.ok) throw new Error(data.message || "Something went wrong");
+
+      Alert.alert("Success", "Your book recommendation has been posted!");
+
+      setTitle("");
+      setCaption("");
+      setRating(3);
+      setImage(null);
+      setImagebase64(null);
+
+      router.push("/");
+    } catch (error) {
+      console.error("Error creating post:", error.message); // Log only the message
+      Alert.alert("Error", error.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const renderRatingPicker = () => {
     const stars = [];
@@ -154,6 +214,40 @@ const Create = () => {
                 )}
               </TouchableOpacity>
             </View>
+
+            {/* Caption */}
+            <View style={styles.formGroup}>
+              <Text style={styles.label}>Caption</Text>
+              <TextInput
+                style={styles.textArea}
+                placeholder="Write your review or thoughts about this book..."
+                placeholderTextColor={COLORS.placeholderText}
+                value={caption}
+                onChangeText={setCaption}
+                multiline
+              />
+            </View>
+
+            {/* Button */}
+            <TouchableOpacity
+              style={styles.button}
+              onPress={handleSubmit}
+              disabled={loading}
+            >
+              {loading ? (
+                <ActivityIndicator color={COLORS.white} />
+              ) : (
+                <>
+                  <Ionicons
+                    name="cloud-upload-outline"
+                    size={20}
+                    color={COLORS.white}
+                    style={styles.buttonIcon}
+                  />
+                  <Text style={styles.buttonText}>Share</Text>
+                </>
+              )}
+            </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
@@ -162,5 +256,3 @@ const Create = () => {
 };
 
 export default Create;
-
-// 3:42:27
