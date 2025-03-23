@@ -3,7 +3,6 @@ import {
   Text,
   FlatList,
   ActivityIndicator,
-  RefreshControl,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
