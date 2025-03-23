@@ -51,7 +51,7 @@ export const getBooks = async (req, res) => {
             books,
             totalBooks,
             currentPage: page,
-            totalPages: Math.ceil(total / limit)
+            totalPages: Math.ceil(totalBooks / limit)
         })
     } catch (error) {
         console.log("Error in getting all books", error);
