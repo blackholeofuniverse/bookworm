@@ -1,4 +1,12 @@
-import { View, Alert, Text, FlatList, TouchableOpacity } from "react-native";
+import {
+  View,
+  Alert,
+  Text,
+  FlatList,
+  TouchableOpacity,
+  ActivityIndicator,
+  RefreshControl,
+} from "react-native";
 import { useEffect, useState } from "react";
 import { useRouter } from "expo-router";
 import { API_URL } from "../../constants/api";
@@ -9,11 +17,13 @@ import LogoutButton from "../../components/LogoutButton";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 import { Image } from "expo-image";
+import Loader from "../../components/Loader";
 
 const Profile = () => {
   const [books, setBooks] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+  const [deletedBookId, setDeletedBookId] = useState(null);
 
   const { token } = useAuthStore();
 
@@ -63,13 +73,18 @@ const Profile = () => {
         style={styles.deleteButton}
         onPress={() => confirmDelete(item._id)}
       >
-        <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
+        {deletedBookId === item._id ? (
+          <ActivityIndicator size={"small"} color={COLORS.primary} />
+        ) : (
+          <Ionicons name="trash-outline" size={20} color={COLORS.primary} />
+        )}
       </TouchableOpacity>
     </View>
   );
 
   const handleDeleteBook = async (bookId) => {
     try {
+      setDeletedBookId(bookId);
       const response = await fetch(`${API_URL}/books/${bookId}`, {
         method: "DELETE",
         headers: { Authorization: `Bearer ${token}` },
@@ -83,6 +98,8 @@ const Profile = () => {
       Alert.alert("Success", "Recommendation deleted successfully");
     } catch (error) {
       Alert.alert("Error", error.message || "Failed to delete recommendation");
+    } finally {
+      setDeletedBookId(null);
     }
   };
 
@@ -117,9 +134,17 @@ const Profile = () => {
     return stars;
   };
 
+  const handleRefresh = async () => {
+    setRefreshing(true);
+    await fetchData();
+    setRefreshing(false);
+  };
+
   useEffect(() => {
     fetchData();
   }, []);
+
+  if(isLoading && !refreshing) return <Loader />
 
   return (
     <View style={styles.container}>
@@ -138,6 +163,14 @@ const Profile = () => {
         keyExtractor={(item) => item._id}
         showsVerticalScrollIndicator={false}
         contentContainerStyle={styles.booksList}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={handleRefresh}
+            colors={[COLORS.primary]}
+            tintColor={COLORS.primary}
+          />
+        }
         ListEmptyComponent={
           <View style={styles.emptyContainer}>
             <Ionicons
