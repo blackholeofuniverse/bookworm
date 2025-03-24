@@ -51,7 +51,8 @@ export const register = [registerLimiter, async (req, res) => {
                 id: newUser._id,
                 username: newUser.username,
                 email: newUser.email,
-                profileImage: newUser.profileImage
+                profileImage: newUser.profileImage,
+                createdAt: newUser.createdAt
             }
         })
     } catch (error) {
@@ -91,7 +92,8 @@ export const login = [loginLimiter, async (req, res) => {
                 id: user._id,
                 username: user.username,
                 email: user.email,
-                profileImage: user.profileImage
+                profileImage: user.profileImage,
+                createdAt: user.createdAt
             }
         });
     } catch (error) {
