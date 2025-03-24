@@ -144,7 +144,21 @@ const Profile = () => {
     fetchData();
   }, []);
 
-  if(isLoading && !refreshing) return <Loader />
+
+  if (isLoading && !refreshing) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: COLORS.background,
+        }}
+      >
+        <ActivityIndicator size={30} color={COLORS.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>

@@ -1,9 +1,4 @@
-import {
-  View,
-  Text,
-  FlatList,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, FlatList, ActivityIndicator } from "react-native";
 import React, { useEffect, useState } from "react";
 import { useAuthStore } from "../../store/authStore";
 import { Image } from "expo-image";
@@ -12,7 +7,6 @@ import { API_URL } from "../../constants/api";
 import { Ionicons } from "@expo/vector-icons";
 import COLORS from "../../constants/colors";
 import { formatPublishDate } from "../../lib/utils";
-import Loader from "../../components/Loader";
 
 const Home = () => {
   const { token } = useAuthStore();
@@ -118,7 +112,20 @@ const Home = () => {
     return stars;
   };
 
-  if (loading) return <Loader />;
+  if (loading) {
+    return (
+      <View
+        style={{
+          flex: 1,
+          justifyContent: "center",
+          alignItems: "center",
+          backgroundColor: COLORS.background,
+        }}
+      >
+        <ActivityIndicator size={30} color={COLORS.primary} />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -142,7 +149,7 @@ const Home = () => {
         onRefresh={() => fetchBooks(1, true)}
         ListHeaderComponent={
           <View style={styles.header}>
-            <Text style={styles.headerTitle}>BookWorm 🐛</Text>
+            <Text style={styles.headerTitle}>BookWorm🐛</Text>
             <Text style={styles.headerSubtitle}>
               Discover great reads from the community 👇🏼
             </Text>
@@ -152,7 +159,7 @@ const Home = () => {
           hasMore && books.length > 0 ? (
             <ActivityIndicator
               style={styles.footerLoader}
-              size="large"
+              size={30}
               color={COLORS.primary}
             />
           ) : null

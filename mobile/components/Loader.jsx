@@ -12,7 +12,7 @@ const Loader = ({ size = "large" }) => {
     }}
   >
     <ActivityIndicator size={size} color={COLORS.primary} />
-  </View>;
+  </View>
 };
 
 export default Loader;
